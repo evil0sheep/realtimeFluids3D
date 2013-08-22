@@ -1,0 +1,5 @@
+This is a 3D implementation of Jos Stam's "Stable Fluid Solver" in 3D parrallelized with CUDA
+
+Type make to build, type ./fluids
+
+Special Thanks to Rob Farber for the CUDA/OpenGL interop code that lets us do real time raytracing

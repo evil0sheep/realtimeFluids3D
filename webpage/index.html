@@ -1,0 +1,68 @@
+ <!--
+Design by Bryant Smith
+http://www.bryantsmith.com
+http://www.aszx.net
+email: templates [-at-] bryantsmith [-dot-] com
+Released under Creative Commons Attribution 2.5 Generic.  In other words, do with it what you please; but please leave the link if you'd be so kind :)
+
+Name       : A Farewell to Colors
+Description: One column, with top naviagation
+Version    : 1.0
+Released   : 20081230
+-->
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+<title>RANSAC Point Cloud Alignment</title>
+</head>
+
+<body>
+    <div id="page">
+		
+        <div id="header">
+        	<h1>Realtime 3D Fluids</h1>
+            <h2>A GPU Parallel Implementation of Jos Stam's Stable Fluids in 3D</h2>
+            
+      </div>
+  <div id="bar"></div>
+
+      <div class="contentTitle"><h1>Introduction</h1></div>
+        <div class="contentText">
+          <p>Fluid flows are a visually interesting part of the world around us and have been traditionally diffcult to include in real time graphics applications because traditional realtime rendering techniques like triangle rasterization are poorly suited to drawing volumetric phenomena which don't have a well defined surface to tesselate triangles over. Recent advances in parrallel computing, specifically GPGPU, have made computation of highly parrallel tasks like raymarching and voxelized fluid dynamics possible in realtime. This webpage describes my implementation of  <a href="http://www.dgp.toronto.edu/~stam/reality/Research/pub.html">Jos Stam's Stable Fluids</a> as described in his paper "Real-Time Fluid Dynamics for Games". </p>
+          <p>&nbsp;</p>
+
+        </div>
+
+      
+
+      <div class="contentTitle"><h1>My Implementation</h1></div>
+        <div class="contentText">
+
+          <p>This implementation was developed on an ASUS Zenbook Prime UX32VD laptop with a 1.9GHz Intel Core i7-3517U,  6GB DDR3 RAM, and an NVIDIA GeForce GT 620M GPU with 96 CUDA cores. On this machine I were able to achieve realtime performance (around 25 FPS) with a 64x64x64 fluid grid and a 1024x1024 imaging window. Below are some images of my implementation running.</p>
+          <p>&nbsp;</p>
+          <img src="density_initial.png" alt="Intital Density Grid Configuration">
+          <img src="velocity_initial.png" alt="Intital velocity Grid Configuration (RGB mapped to XYZ)">
+          <p>Above are one set of intial conditions I fed into the simulation, the gray checkerboard is the intial density grid, and the colorful image is the initial velocity grid. Because the velocity grid represents a 3D vector field, the vector value in each cell can be mapped onto the RGB color space, such that red maps to the x component, green to y, and blue to z (where positive y points upward). This velocity field is a cylinder of high velocity, where the velocity at each point on the cylinder's surface is tangental to the cylinder counterclockwise when looking from the top, plus a little bit upward. This causes the density to flow upward in a swirling vortex from its intital checkerboard pattern.</p>
+          <p>&nbsp;</p>
+
+          <img src="density_t1.png" alt="Early density grid evolution">
+          <img src="density_t2.png" alt="Later density grid evolution">
+          <img src="velocity_t1.png" alt="Velocity grid evolution">
+
+          <p>These images show the above intial conditions as they evolve ver time</p>
+          <p>&nbsp;</p>
+          
+          <p>This implentation is a realtime, GPU parrallel version of this stable fluids solver extended to 3-Dimensions. GPU parallelism is achieved by leveraging NVIDIA's CUDA API to evolve the fluid system's state, set the boundary conditions of the simulation, and to draw different components the fluid system with ray marching. I use six 3D kernels to evolve the fluid system state (each launched with one thread per cell of the fluid grid), one 2D kernel to set the boundary conditions (launched with one thread per cell on one face of the the simulation volume), and one 2D kernel to draw the simulation volume with ray marching (launched with one thread per pixel in the output image). Each thread running the ray marching kernel determines which pixel it is responsible for based on its location in the computational grid, then computes the ray passing through this pixel based on the camera parameters, then computes the intersection interval of this way with the bounding box of the simulation volume, and iterates the ray paremeter over this intersection interval accumulating color at each step from the density or velocity of the simulation cell which contains the solution of the ray with the current ray parameter. The resulting accumulated color is then written into an OpenGL texture buffer (using Rob Farber's OpenGL/CUDA interop code), and textured onto a quad by the OpenGL fragment shader. </p>
+          <p>&nbsp;</p>
+          
+
+        </div>
+
+</div>
+        <div id="footer"><a href="http://www.aszx.net">web development</a> by <a href="http://www.bryantsmith.com">bryant smith</a></div>
+</body>
+</html>
